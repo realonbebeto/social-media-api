@@ -49,3 +49,7 @@ class UserResponse(UserBase):
 
 class GetUser(UserResponse):
     pass
+
+
+class UserLogin(UserBase):
+    password: str

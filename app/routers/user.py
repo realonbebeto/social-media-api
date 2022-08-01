@@ -6,7 +6,7 @@ from ..schemas import CreateUser, GetUser
 from ..utils import hashPwd
 from .. import models
 
-router = APIRouter()
+router = APIRouter(tags=['Users'])
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=GetUser)
