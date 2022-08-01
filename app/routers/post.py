@@ -4,6 +4,7 @@ from fastapi import Response, status, HTTPException, Depends, APIRouter
 from .. import models
 from ..database import get_db
 from ..schemas import CreatePost, UpdatePost, GetPost
+from ..oauth2 import getCurrentUser
 
 
 router = APIRouter(tags=['Posts'])
@@ -16,7 +17,8 @@ async def getAllPosts(db: Session = Depends(get_db)):
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=GetPost)
-async def createPost(post: CreatePost, db: Session = Depends(get_db)):
+async def createPost(post: CreatePost, db: Session = Depends(get_db), user_id=Depends(getCurrentUser)):
+    print(user_id)
     new_post = models.Post(**post.dict())
     db.add(new_post)
     db.commit()
@@ -25,7 +27,7 @@ async def createPost(post: CreatePost, db: Session = Depends(get_db)):
 
 
 @router.get("/latest", response_model=GetPost)
-async def getLatestPost(db: Session = Depends(get_db)):
+async def getLatestPost(db: Session = Depends(get_db), user_id=Depends(getCurrentUser)):
     post = db.query(models.Post).all()[-1]
     if not post:
         #response.status_code = status.HTTP_404_NOT_FOUND
@@ -38,7 +40,7 @@ async def getLatestPost(db: Session = Depends(get_db)):
 
 
 @router.get("/{id}", response_model=GetPost)
-async def getPostById(id: int, db: Session = Depends(get_db)):
+async def getPostById(id: int, db: Session = Depends(get_db), user_id=Depends(getCurrentUser)):
     post = db.query(models.Post).filter_by(id=id).first()
 
     if not post:
@@ -48,7 +50,7 @@ async def getPostById(id: int, db: Session = Depends(get_db)):
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def deletePostById(id: int, db: Session = Depends(get_db)):
+async def deletePostById(id: int, db: Session = Depends(get_db), user_id=Depends(getCurrentUser)):
     post = db.query(models.Post).filter_by(id=id)
 
     if post.first() == None:
@@ -62,7 +64,7 @@ async def deletePostById(id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{id}", status_code=status.HTTP_200_OK, response_model=GetPost)
-async def updatePostById(id: int, update_post: UpdatePost, db: Session = Depends(get_db)):
+async def updatePostById(id: int, update_post: UpdatePost, db: Session = Depends(get_db), user_id=Depends(getCurrentUser)):
     post_q = db.query(models.Post).filter_by(id=id)
 
     if post_q.first() == None:

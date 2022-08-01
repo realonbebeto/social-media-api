@@ -1,3 +1,4 @@
+from os import access
 from pydantic import BaseModel, EmailStr
 from typing import *
 from datetime import datetime
@@ -58,3 +59,12 @@ class UpdateUser(BaseModel):
 
 class UserLogin(UserBase):
     password: str
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    id: Optional[str] = None
