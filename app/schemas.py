@@ -1,4 +1,3 @@
-from tkinter import E
 from pydantic import BaseModel, EmailStr
 from typing import *
 from datetime import datetime
@@ -48,6 +47,12 @@ class UserResponse(UserBase):
 
 
 class GetUser(UserResponse):
+    pass
+
+
+class UpdateUser(BaseModel):
+    email: Optional[EmailStr]
+    password: Optional[str]
     pass
 
 

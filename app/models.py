@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String, Boolean, func
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from sqlalchemy_utils import EmailType
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class Post(Base):
@@ -15,7 +15,8 @@ class Post(Base):
     published = Column(Boolean, server_default="TRUE", nullable=False)
     created_at = Column(TIMESTAMP(timezone=True),
                         server_default=text("now()"), nullable=False)
-    updated_at = Column(TIMESTAMP(timezone=True), onupdate=datetime.now())
+    updated_at = Column(TIMESTAMP(timezone=True),
+                        onupdate=datetime.now(timezone.utc))
 
 
 class User(Base):
@@ -26,4 +27,5 @@ class User(Base):
     password = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True),
                         server_default=text("now()"), nullable=False)
-    updated_at = Column(TIMESTAMP(timezone=True), onupdate=text("now()"))
+    updated_at = Column(TIMESTAMP(timezone=True),
+                        onupdate=datetime.now(timezone.utc))
