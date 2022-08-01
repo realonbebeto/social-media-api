@@ -17,9 +17,6 @@ class Post(BaseModel):
     published: bool = True
 
 
-my_posts = []
-
-
 @app.get("/")
 async def root():
     return {"message": "Hello, Bebeto"}
