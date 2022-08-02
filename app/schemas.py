@@ -4,6 +4,13 @@ from typing import *
 from datetime import datetime
 
 
+class EmailResponse(BaseModel):
+    email: EmailStr
+
+    class Config:
+        orm_mode = True
+
+
 class UserBase(BaseModel):
     email: EmailStr
 
@@ -52,14 +59,14 @@ class UpdatePost(PostBase):
 class PostResponse(PostBase):
     id: int
     created_at: datetime
-    owner_id: int
-    owner: GetUser
+    #owner_id: int
 
     class Config:
         orm_mode = True
 
 
 class GetPost(PostResponse):
+    owner: EmailResponse
     pass
 
 
