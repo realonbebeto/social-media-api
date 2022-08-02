@@ -4,32 +4,6 @@ from typing import *
 from datetime import datetime
 
 
-class PostBase(BaseModel):
-    title: str
-    content: str
-    published: bool = True
-
-
-class CreatePost(PostBase):
-    pass
-
-
-class UpdatePost(PostBase):
-    pass
-
-
-class PostResponse(PostBase):
-    id: int
-    created_at: datetime
-
-    class Config:
-        orm_mode = True
-
-
-class GetPost(PostResponse):
-    pass
-
-
 class UserBase(BaseModel):
     email: EmailStr
 
@@ -59,6 +33,34 @@ class UpdateUser(BaseModel):
 
 class UserLogin(UserBase):
     password: str
+
+
+class PostBase(BaseModel):
+    title: str
+    content: str
+    published: bool = True
+
+
+class CreatePost(PostBase):
+    pass
+
+
+class UpdatePost(PostBase):
+    pass
+
+
+class PostResponse(PostBase):
+    id: int
+    created_at: datetime
+    owner_id: int
+    owner: GetUser
+
+    class Config:
+        orm_mode = True
+
+
+class GetPost(PostResponse):
+    pass
 
 
 class Token(BaseModel):

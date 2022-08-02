@@ -1,5 +1,6 @@
 from .database import Base
-from sqlalchemy import Column, Integer, String, Boolean, func
+from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from sqlalchemy_utils import EmailType
@@ -17,6 +18,10 @@ class Post(Base):
                         server_default=text("now()"), nullable=False)
     updated_at = Column(TIMESTAMP(timezone=True),
                         onupdate=datetime.now(timezone.utc))
+    owner_id = Column(Integer, ForeignKey(
+        'users.id', ondelete="CASCADE"), nullable=False)
+
+    owner = relationship("User")
 
 
 class User(Base):
