@@ -1,5 +1,5 @@
 from os import access
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, validator
 from typing import *
 from datetime import datetime
 
@@ -77,3 +77,8 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: Optional[str] = None
+
+
+class LikeBase(BaseModel):
+    post_id: int
+    direction: int

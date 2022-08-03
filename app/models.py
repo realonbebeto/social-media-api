@@ -1,5 +1,6 @@
+from venv import create
 from .database import Base
-from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
+from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, update
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
@@ -30,6 +31,20 @@ class User(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     email = Column(EmailType, nullable=False, unique=True)
     password = Column(String, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True),
+                        server_default=text("now()"), nullable=False)
+    updated_at = Column(TIMESTAMP(timezone=True),
+                        onupdate=datetime.now(timezone.utc))
+
+
+class Like(Base):
+
+    __tablename__ = 'likes'
+
+    post_id = Column(Integer, ForeignKey(
+        'posts.id', ondelete="CASCADE"), primary_key=True, nullable=False)
+    user_id = Column(Integer, ForeignKey(
+        'users.id', ondelete="CASCADE"), primary_key=True, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True),
                         server_default=text("now()"), nullable=False)
     updated_at = Column(TIMESTAMP(timezone=True),
