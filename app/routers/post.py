@@ -1,5 +1,7 @@
+from operator import mod
 from typing import List
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from fastapi import Response, status, HTTPException, Depends, APIRouter
 from .. import models
 from ..database import get_db
@@ -9,10 +11,15 @@ from ..oauth2 import getCurrentUser
 
 router = APIRouter(tags=['Posts'])
 
+#
+
 
 @router.get("/", response_model=List[GetPost])
 async def getAllPosts(db: Session = Depends(get_db), current_user=Depends(getCurrentUser)):
-    posts = db.query(models.Post).all()
+    #posts = db.query(models.Post).all()
+
+    posts = db.query(models.Post, func.count(models.Like.user_id).label("likes")).join(
+        models.Like, models.Post.id == models.Like.post_id, isouter=True).group_by(models.Post.id).all()
     return posts
 
 
@@ -27,14 +34,16 @@ async def createPost(post: CreatePost, db: Session = Depends(get_db), current_us
 
 @router.get("/latest", response_model=GetPost)
 async def getLatestPost(db: Session = Depends(get_db), current_user=Depends(getCurrentUser)):
-    post = db.query(models.Post).all()[-1]
+    post = db.query(models.Post, func.count(models.Like.user_id).label("likes")).join(
+        models.Like, models.Post.id == models.Like.post_id, isouter=True).group_by(models.Post.id).all()[-1]
+    print()
     if not post:
         #response.status_code = status.HTTP_404_NOT_FOUND
         # return {'message': f"Post with id '{id}' not found"}
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"No post found")
 
-    if post.owner_id != current_user.id:
+    if post.Post.owner_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Not authorized to perform requested action")
     return post
@@ -44,13 +53,14 @@ async def getLatestPost(db: Session = Depends(get_db), current_user=Depends(getC
 
 @router.get("/{id}", response_model=GetPost)
 async def getPostById(id: int, db: Session = Depends(get_db), current_user=Depends(getCurrentUser)):
-    post = db.query(models.Post).filter_by(id=id).first()
+    post = db.query(models.Post, func.count(models.Like.user_id).label("likes")).join(
+        models.Like, models.Post.id == models.Like.post_id, isouter=True).group_by(models.Post.id).filter(models.Post.id == id).first()
 
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post with id '{id}' not found")
 
-    if post.owner_id != current_user.id:
+    if post.Post.owner_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Not authorized to perform requested action")
     return post

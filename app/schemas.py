@@ -60,14 +60,18 @@ class PostResponse(PostBase):
     id: int
     created_at: datetime
     #owner_id: int
+    owner: EmailResponse
 
     class Config:
         orm_mode = True
 
 
-class GetPost(PostResponse):
-    owner: EmailResponse
-    pass
+class GetPost(BaseModel):
+    Post: PostResponse
+    likes: int
+
+    class Config:
+        orm_mode = True
 
 
 class Token(BaseModel):
@@ -82,3 +86,13 @@ class TokenData(BaseModel):
 class LikeBase(BaseModel):
     post_id: int
     direction: int
+
+
+class CreateLike(LikeBase):
+    @validator('direction')
+    def zeroOrOne(cls, v):
+        if v > 1 or v < 0:
+            raise ValueError(
+                'Invalid value: Direction must be one(1) or zero(0)')
+        return v
+    pass

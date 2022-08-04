@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from fastapi import status, HTTPException, Depends, APIRouter
 from .. import models
 from ..database import get_db
-from ..schemas import LikeBase
+from ..schemas import CreateLike
 from ..oauth2 import getCurrentUser
 
 
@@ -11,7 +11,7 @@ router = APIRouter(tags=['Likes'])
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def effectLike(like: LikeBase, db: Session = Depends(get_db), current_user=Depends(getCurrentUser)):
+def effectLike(like: CreateLike, db: Session = Depends(get_db), current_user=Depends(getCurrentUser)):
     post = db.query(models.Post).filter(models.Post.id == like.post_id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
