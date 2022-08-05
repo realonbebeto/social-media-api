@@ -13,6 +13,7 @@ class EmailResponse(BaseModel):
 
 class UserBase(BaseModel):
     email: EmailStr
+    phone_number: str
 
 
 class CreateUser(UserBase):
