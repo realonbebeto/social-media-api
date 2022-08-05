@@ -1,11 +1,12 @@
 from operator import mod
-from typing import List
+from statistics import mode
+from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from fastapi import Response, status, HTTPException, Depends, APIRouter
 from .. import models
 from ..database import get_db
-from ..schemas import CreatePost, UpdatePost, GetPost
+from ..schemas import CreatePost, PostResponse, UpdatePost, GetPost
 from ..oauth2 import getCurrentUser
 
 
@@ -20,10 +21,29 @@ async def getAllPosts(db: Session = Depends(get_db), current_user=Depends(getCur
 
     posts = db.query(models.Post, func.count(models.Like.user_id).label("likes")).join(
         models.Like, models.Post.id == models.Like.post_id, isouter=True).group_by(models.Post.id).all()
+
+    if not posts:
+        #response.status_code = status.HTTP_404_NOT_FOUND
+        # return {'message': f"Post with id '{id}' not found"}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"No post found")
     return posts
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=GetPost)
+@router.get("/find", response_model=List[GetPost])
+async def search(db: Session = Depends(get_db), current_user=Depends(getCurrentUser), limit: int = 5, search: Optional[str] = ""):
+    posts = db.query(models.Post, func.count(models.Like.user_id).label("likes")).join(
+        models.Like, models.Post.id == models.Like.post_id, isouter=True).group_by(models.Post.id).filter(models.Post.title.contains(search)).limit(limit).all()
+
+    if not posts:
+        #response.status_code = status.HTTP_404_NOT_FOUND
+        # return {'message': f"Post with id '{id}' not found"}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"No post found")
+    return posts
+
+
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=PostResponse)
 async def createPost(post: CreatePost, db: Session = Depends(get_db), current_user=Depends(getCurrentUser)):
     new_post = models.Post(owner_id=current_user.id, **post.dict())
     db.add(new_post)
@@ -35,7 +55,7 @@ async def createPost(post: CreatePost, db: Session = Depends(get_db), current_us
 @router.get("/latest", response_model=GetPost)
 async def getLatestPost(db: Session = Depends(get_db), current_user=Depends(getCurrentUser)):
     post = db.query(models.Post, func.count(models.Like.user_id).label("likes")).join(
-        models.Like, models.Post.id == models.Like.post_id, isouter=True).group_by(models.Post.id).all()[-1]
+        models.Like, models.Post.id == models.Like.post_id, isouter=True).group_by(models.Post.id).order_by(models.Post.created_at.desc()).first()
     print()
     if not post:
         #response.status_code = status.HTTP_404_NOT_FOUND
